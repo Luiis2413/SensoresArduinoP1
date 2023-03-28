@@ -1,10 +1,8 @@
 import os
 from tkinter import W
-import lecturaArduino
 
 from interfaceSensor import InterfaceSensor
 from interfaceDatosArduino import InterfaceDatosSensor
-from lecturaArduino import DatoSensor
 
 class Main():
     def __init__(self):

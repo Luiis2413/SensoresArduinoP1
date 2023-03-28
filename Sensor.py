@@ -3,12 +3,13 @@ from jsonSensor import  crearjson
 
 
 class Sensor(crearjson):
-    def __init__(self, nombreSensor='',pines="",tipo='',descripcion=''):
+    def __init__(self, nombreSensor='',pines=list(),tipo='',descripcion='',dispositivo=""):
         super(Sensor, self).__init__('json/jsonMaterias.json')
         self.nombreSensor = nombreSensor
         self.pines=pines
         self.tipo=tipo
         self.descr = descripcion
+        self.dispositivo= dispositivo
 
         self.lista = list()
 
@@ -34,7 +35,7 @@ class Sensor(crearjson):
         lista = list()
         data = self.getDataJson()
         for x in data:
-            lista.append(Sensor(nombreSensor=x['nombreSensor'],pines=x['pines'],tipo=x['tipo'],descripcion=x['descr']))
+            lista.append(Sensor(nombreSensor=x['nombreSensor'],pines=x['pines'],tipo=x['tipo'],descripcion=x['descr'],dispositivo=x['dispositivo']))
         self.lista = lista
 
     def getDictory(self):
@@ -42,7 +43,8 @@ class Sensor(crearjson):
             "Nombre Sensor": self.nombreSensor,
             "pines":self.pines,
             "tipo":self.tipo,
-            "descripcion":self.descr
+            "descripcion":self.descr,
+            "dispositivo":self.dispositivo
         }
 
     def __iter__(self):

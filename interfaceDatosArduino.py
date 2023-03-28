@@ -2,6 +2,9 @@ import mongo
 from os import remove
 from datetime import datetime
 
+
+from codigosSensoresRasp import  codSenRasp
+
 from Sensor import Sensor
 from datosSensor import DatosSensor
 import os
@@ -9,7 +12,7 @@ import serial
 import time
 
 
-interacciondb = mongo.MongoConexion("mongodb://localhost:27017", "sistemaSensores", "DatosSensores")
+interacciondb = mongo.MongoConexion("mongodb+srv://admin:luisskate13@cluster0.7einrmk.mongodb.net/test", "sistemaSensores", "DatosSensores")
 
 class InterfaceDatosSensor():
     def __init__(self):
@@ -17,6 +20,7 @@ class InterfaceDatosSensor():
         self.listaS.toObjects()
         self.lista = DatosSensor()
         self.lista.toObjects()
+
 
     def cls(self):
         os.system('cls' if os.name == 'nt' else 'clear')
@@ -45,14 +49,14 @@ class InterfaceDatosSensor():
             mylista = self.lista
         else:
             mylista = lista
-        print("ID".ljust(5) +"\t\t" + 'nombre'.ljust(20)+ "\t\t" + 'Datos'.ljust(20)+'Fecha'.ljust(20)+'')
+        print("ID".ljust(5) +"\t\t" + 'nombre'.ljust(20)+ "\t\t" + 'Datos'.ljust(20)+'Fecha'.ljust(20)+''+'Info'.ljust(20)+'')
         i = 0
 
 
 
 
-        for listaSensor in mylista:
-            print(str(i).ljust(5) + "\t\t" + listaSensor.nombre+"\t\t" + str(listaSensor.datos) +  listaSensor.medida+ "\t\t"+listaSensor.fecha )
+        for listaDatosSensor in mylista:
+            print(str(i).ljust(5) + "\t\t" + listaDatosSensor.nombre+"\t\t" + str(listaDatosSensor.datos) +  listaDatosSensor.medida+ "\t\t"+listaDatosSensor.fecha+ "\t\t"+str(listaDatosSensor.detalles))
             i += 1
 
 
@@ -75,49 +79,73 @@ class InterfaceDatosSensor():
 
 
 
+
+
+
         id = 0
 
 
-        ser = serial.Serial('COM5 ', 9600)  # Reemplaza 'COM3' con el nombre del puerto serial del Arduino
+
         i=0
         for listaSensor in mylistaS:
 
-            cadena = ser.readline()
-            nom = cadena.decode('utf-8').rstrip()
-
-
-
-
-            cadena = ser.readline()
-            dats = cadena.decode('utf-8').rstrip()
-
-            cadena = ser.readline()
-            medida = cadena.decode('utf-8').rstrip()
-
-            now = datetime.now()
-
-            listaSensor = self.lista.getlist()[id]
-            listaSensor.nombre = str(nom)
-            listaSensor.datos = int(dats)
-            listaSensor.medida = medida
-
-            listaSensor.fecha = str(now)
-            self.lista.modificar(id, listaSensor)
-
-            if (interacciondb.conect()):
-                interacciondb.insert_oneD(listaSensor)
-            self.lista.toJson(self.lista)
-
-
-            id=id+1
-        # time.sleep(2)
+           if listaSensor.dispositivo == "raspberry":
+               codSen = codSenRasp()
+               if listaSensor.tipo== "us":
+                   codSen.ultrasonico(listaSensor.pines[0],listaSensor.pines[1])
+               elif listaSensor.tipo == "Tem":
+                   codSen.temperatura(listaSensor.pines[0])
 
 
 
 
 
 
-        return listaSensor
+
+           elif listaSensor.dispositivo == "arduinoUno":
+               ser = serial.Serial('COM5', 9600)  # Reemplaza 'COM3' con el nombre del puerto serial del Arduino
+               x=0
+               cadena = ser.readline()
+               nom = cadena.decode('utf-8').rstrip()
+               dtails = []
+
+               dtails.append(listaSensor.nombreSensor)
+               dtails.append(listaSensor.descr)
+               dtails.append(listaSensor.pines)
+               dtails.append(listaSensor.tipo)
+               dtails.append(listaSensor.dispositivo)
+
+               # print(str(i).ljust( 5) + "\t\t" + listaSensor.nombreSensor + "\t\t" + listaSensor.tipo + "\t\t" + listaSensor.pines + "\t\t" + listaSensor.descr)
+
+               cadena = ser.readline()
+               dats = cadena.decode('utf-8').rstrip()
+
+               cadena = ser.readline()
+               medida = cadena.decode('utf-8').rstrip()
+
+               now = datetime.now()
+
+               listaDatosSensor = self.lista.getlist()[id]
+               listaDatosSensor.nombre = str(nom)
+               listaDatosSensor.datos = int(dats)
+               listaDatosSensor.medida = medida
+               listaDatosSensor.detalles = dtails
+
+               listaDatosSensor.fecha = str(now)
+               self.lista.modificar(id, listaDatosSensor)
+
+               if (interacciondb.conect()):
+                   interacciondb.insert_oneD(listaDatosSensor)
+               self.lista.toJson(self.lista)
+
+               id = id + 1
+               return listaSensor
+           # time.sleep(2)
+        else:
+
+            print("no se encontro un sensor en un dispositivo conectado")
+
+
 
     def eliminarSensor(self):
         id = input("Introduce ID:")

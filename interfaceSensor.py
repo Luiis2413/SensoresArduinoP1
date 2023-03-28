@@ -8,7 +8,7 @@ import os
 import interfaceDatosArduino
 
 
-interacciondb = mongo.MongoConexion("mongodb://localhost:27017", "sistemaSensores", "Sensores")
+interacciondb = mongo.MongoConexion("mongodb+srv://admin:luisskate13@cluster0.7einrmk.mongodb.net/test", "sistemaSensores", "Sensores")
 
 class InterfaceSensor():
     def __init__(self):
@@ -26,6 +26,7 @@ class InterfaceSensor():
         listaDataSEnsor.nombre = ""
         listaDataSEnsor.medida = ""
         listaDataSEnsor.datos = 0
+        listaDataSEnsor.detalles=[]
 
         return listaDataSEnsor
 
@@ -36,15 +37,34 @@ class InterfaceSensor():
 
         listaSensor.nombreSensor = input("Nombre del Sensor:")
         listaSensor.tipo = input("tipo de sensor:")
-        cantPin=int(input("ingresa la cantidad de pines"))
+
+        dispositivo=input("en que dispositivo esta conectado\n1)arduinoUNO\n2)raspberry")
+
+
+
+        if dispositivo == "1":
+            listaSensor.dispositivo = "arduinoUno"
+        elif dispositivo == "2":
+            listaSensor.dispositivo = "raspberry"
+        else:
+            print("el dispositivo no es valido, asegurese de editar la informacion antes de usar el programa!!")
+            print("el dispositivo se pondra como desconocido!!")
+            listaSensor.dispositivo="desconocido"
+            m = input("oprima enter para estar enterado")
+
         pines=list()
+        cantPin = int(input("ingresa la cantidad de pines"))
         i=0
         while i!= cantPin:
             p=input("pin:")
-            pines.append(p)
+            pines.append(int(p))
             i=i+1
-        listaSensor.pines=str(pines)
+        listaSensor.pines=pines
+
+
+
         listaSensor.descr=input("descripcion:")
+
 
 
 
@@ -65,7 +85,7 @@ class InterfaceSensor():
             mylista = self.lista
         else:
             mylista = lista
-        print("ID".ljust(5) + "\t\t" + 'Nombre'.ljust(20)+'tipo'.ljust(20)+'pines')
+        print("ID".ljust(5) + "\t\t" + 'Nombre'.ljust(20)+'tipo'.ljust(20)+'pines'.ljust(20)+'descripcion'.ljust(20)+'dispositivo')
         i = 0
 
         interacciondb.conect()
@@ -74,7 +94,7 @@ class InterfaceSensor():
 
 
         for listaSensor in mylista:
-            print(str(i).ljust(5) + "\t\t" + listaSensor.nombreSensor+ "\t\t"+listaSensor.tipo +"\t\t"+listaSensor.pines+"\t\t"+listaSensor.descr)
+            print(str(i).ljust(5) + "\t\t" + listaSensor.nombreSensor+ "\t\t"+listaSensor.tipo +"\t\t"+str(listaSensor.pines)+"\t\t"+listaSensor.descr+"\t\t"+listaSensor.dispositivo)
             i += 1
 
             if (interacciondb.conect()):
